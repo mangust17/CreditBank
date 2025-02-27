@@ -1,0 +1,120 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Новая заявка на кредит - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Новая заявка на кредит</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Требуемые документы:</h5>
+                        <ul class="mb-0">
+                            <li>Паспорт (все страницы)</li>
+                            <li>Справка о доходах (2-НДФЛ или по форме банка)</li>
+                            <li>Справка с места работы</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" id="applicationForm">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">1. Информация о кредите</h5>
+                        <div class="mb-3">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                Сумма кредита (₽)
+                            </label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                                <div class="text-danger">
+                                    {{ form.amount.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.term_months.id_for_label }}" class="form-label">
+                                Срок кредита (месяцев)
+                            </label>
+                            {{ form.term_months }}
+                            {% if form.term_months.errors %}
+                                <div class="text-danger">
+                                    {{ form.term_months.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.purpose.id_for_label }}" class="form-label">
+                                Цель кредита
+                            </label>
+                            {{ form.purpose }}
+                            {% if form.purpose.errors %}
+                                <div class="text-danger">
+                                    {{ form.purpose.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3">2. Документы</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Паспорт</label>
+                            <input type="file" name="passport" class="form-control" required accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Справка о доходах</label>
+                            <input type="file" name="income" class="form-control" required accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Справка с места работы</label>
+                            <input type="file" name="employment" class="form-control" required accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <small>
+                                <strong>Внимание!</strong> Поддерживаемые форматы файлов: PDF, JPG, PNG. 
+                                Максимальный размер каждого файла: 5 МБ.
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                Отправить заявку
+                            </button>
+                            <a href="{% url 'client_applications' %}" class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('applicationForm').addEventListener('submit', function(e) {
+    const fileInputs = this.querySelectorAll('input[type="file"]');
+    const maxSize = 5 * 1024 * 1024;
+    
+    for (let input of fileInputs) {
+        if (input.files[0]) {
+            if (input.files[0].size > maxSize) {
+                e.preventDefault();
+                alert(`Файл ${input.files[0].name} превышает максимальный размер в 5 МБ`);
+                return;
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Список заявок - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Список заявок на кредит</h4>
+                <div class="btn-group">
+                    <a href="{% url 'referrer_applications' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}">
+                        Все
+                    </a>
+                    <a href="?status=pending" class="btn btn-outline-primary {% if request.GET.status == 'pending' %}active{% endif %}">
+                        На рассмотрении
+                    </a>
+                    <a href="?status=documents_required" class="btn btn-outline-primary {% if request.GET.status == 'documents_required' %}active{% endif %}">
+                        Требуются документы
+                    </a>
+                    <a href="?status=approved" class="btn btn-outline-primary {% if request.GET.status == 'approved' %}active{% endif %}">
+                        Одобренные
+                    </a>
+                    <a href="?status=rejected" class="btn btn-outline-primary {% if request.GET.status == 'rejected' %}active{% endif %}">
+                        Отклоненные
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Сумма</th>
+                                <th>Срок (мес.)</th>
+                                <th>Статус</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                                <tr>
+                                    <td>{{ application.id }}</td>
+                                    <td>{{ application.client.username }}</td>
+                                    <td>{{ application.amount }} ₽</td>
+                                    <td>{{ application.term_months }}</td>
+                                    <td>
+                                        <span class="badge {% if application.status == 'approved' %}bg-success
+                                                         {% elif application.status == 'rejected' %}bg-danger
+                                                         {% elif application.status == 'pending' %}bg-warning
+                                                         {% else %}bg-info{% endif %}">
+                                            {{ application.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ application.created_at|date:"d.m.Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'referrer_application_detail' application.id %}" 
+                                               class="btn btn-sm btn-primary">
+                                                Просмотр
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if is_paginated %}
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}
+                                        {% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        Предыдущая
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ num }}
+                                        {% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}
+                                        {% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        Следующая
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <h5 class="text-muted">Заявок не найдено</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,133 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Загрузка документов - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Загрузка документов для заявки №{{ application_id }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">Требования к документам:</h5>
+                    <ul class="mb-0">
+                        <li>Формат файлов: PDF, JPG, PNG</li>
+                        <li>Максимальный размер: 5 МБ</li>
+                        <li>Документы должны быть четкими и читаемыми</li>
+                    </ul>
+                </div>
+
+                {% if existing_documents %}
+                    <div class="mb-4">
+                        <h5>Загруженные документы:</h5>
+                        <div class="list-group">
+                            {% for doc in existing_documents %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ doc.get_doc_type_display }}</h6>
+                                        <small class="text-muted">
+                                            Загружен: {{ doc.uploaded_at|date:"d.m.Y H:i" }}
+                                        </small>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a href="{{ doc.file.url }}" class="btn btn-sm btn-primary" 
+                                           target="_blank">Просмотреть</a>
+                                        <button class="btn btn-sm btn-danger" 
+                                                onclick="deleteDocument({{ doc.id }})">
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" id="uploadForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Тип документа</label>
+                        {{ form.doc_type }}
+                        {% if form.doc_type.errors %}
+                            <div class="text-danger">
+                                {{ form.doc_type.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Файл</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">
+                                {{ form.file.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="progress mb-3 d-none" id="uploadProgress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            Загрузить документ
+                        </button>
+                        <a href="{% url 'client_applications' %}" class="btn btn-outline-secondary">
+                            Вернуться к заявкам
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const form = document.getElementById('uploadForm');
+const progressBar = document.getElementById('uploadProgress');
+const progressBarInner = progressBar.querySelector('.progress-bar');
+
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    progressBar.classList.remove('d-none');
+    progressBarInner.style.width = '0%';
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Ошибка при загрузке файла');
+        }
+    });
+});
+
+function deleteDocument(docId) {
+    if (confirm('Вы уверены, что хотите удалить этот документ?')) {
+        fetch(`/document/${docId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

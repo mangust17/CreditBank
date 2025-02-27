@@ -1,0 +1,57 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Мои заявки - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Мои заявки на кредит</h4>
+        <a href="{% url 'client_application_create' %}" class="btn btn-primary">Новая заявка</a>
+    </div>
+    <div class="card-body">
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>№ заявки</th>
+                            <th>Сумма</th>
+                            <th>Срок (мес.)</th>
+                            <th>Статус</th>
+                            <th>Дата подачи</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td>{{ app.id }}</td>
+                                <td>{{ app.amount }} ₽</td>
+                                <td>{{ app.term_months }}</td>
+                                <td>
+                                    <span class="badge {% if app.status == 'approved' %}bg-success
+                                        {% elif app.status == 'rejected' %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                                        {{ app.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ app.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>
+                                    {% if app.status == 'documents_required' %}
+                                        <a href="{% url 'document_upload' app.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            Загрузить документы
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center">У вас пока нет заявок на кредит</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Заявка №{{ object.id }} - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Заявка №{{ object.id }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Клиент:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ object.client.get_full_name|default:object.client.username }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Сумма:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ object.amount }} ₽
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Срок:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ object.term_months }} месяцев
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Цель кредита:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ object.purpose }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Дата создания:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ object.created_at|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="row align-items-end">
+                            <div class="col-md-8">
+                                <label class="form-label"><strong>Статус заявки:</strong></label>
+                                <select name="status" class="form-select">
+                                    {% for value, label in object.STATUS_CHOICES %}
+                                        <option value="{{ value }}" {% if object.status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Обновить статус
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Документы -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Документы</h5>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                        <div class="list-group">
+                            {% for doc in documents %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ doc.get_doc_type_display }}</h6>
+                                            <small class="text-muted">Загружен: {{ doc.uploaded_at|date:"d.m.Y H:i" }}</small>
+                                        </div>
+                                        <form method="get" action="{% url 'download_document' doc.id %}">
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-download me-1"></i> Скачать
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Документы не загружены</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">История изменений</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Здесь можно добавить историю изменений статуса -->
+                    <p class="text-muted">История изменений пока недоступна</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

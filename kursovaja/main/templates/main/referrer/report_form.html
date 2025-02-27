@@ -1,0 +1,141 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Создание отчета - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Создание отчета</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="reportForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Заголовок отчета</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger">
+                                {{ form.title.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Период отчета</label>
+                        <div class="row">
+                            <div class="col">
+                                <input type="date" class="form-control" id="startDate" 
+                                       name="start_date" required>
+                            </div>
+                            <div class="col">
+                                <input type="date" class="form-control" id="endDate" 
+                                       name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Содержание отчета</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger">
+                                {{ form.content.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Статистика за выбранный период</h5>
+                        <div id="reportStats" class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Всего заявок</h6>
+                                        <p id="totalApplications">-</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Одобрено</h6>
+                                        <p id="approvedApplications">-</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Отклонено</h6>
+                                        <p id="rejectedApplications">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            Создать отчет
+                        </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success" id="previewBtn">
+                                Предпросмотр
+                            </button>
+                            <a href="{% url 'referrer_dashboard' %}" class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно предпросмотра -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Предпросмотр отчета</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('startDate').addEventListener('change', updateStats);
+document.getElementById('endDate').addEventListener('change', updateStats);
+
+function updateStats() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (startDate && endDate) {
+        fetch(`/api/report-stats/?start_date=${startDate}&end_date=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('totalApplications').textContent = data.total;
+                document.getElementById('approvedApplications').textContent = data.approved;
+                document.getElementById('rejectedApplications').textContent = data.rejected;
+            });
+    }
+}
+
+document.getElementById('previewBtn').addEventListener('click', function() {
+    const title = document.querySelector('[name="title"]').value;
+    const content = document.querySelector('[name="content"]').value;
+    
+    const previewContent = document.getElementById('previewContent');
+    previewContent.innerHTML = `
+        <h4>${title}</h4>
+        <hr>
+        ${content.replace(/\n/g, '<br>')}
+    `;
+    
+    new bootstrap.Modal(document.getElementById('previewModal')).show();
+});
+</script>
+{% endblock %} 

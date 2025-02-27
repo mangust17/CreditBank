@@ -1,0 +1,50 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Боковое меню -->
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    {% if user.role == 'client' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'client_dashboard' %}">
+                                Панель управления
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'client_applications' %}">
+                                Мои заявки
+                            </a>
+                        </li>
+                    {% elif user.role == 'referrer' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'referrer_dashboard' %}">
+                                Панель управления
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'referrer_applications' %}">
+                                Заявки на рассмотрении
+                            </a>
+                        </li>
+                    {% elif user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                                Панель управления
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Основной контент -->
+        <main class="col-md-10 ms-sm-auto px-md-4">
+            {% block dashboard_content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}

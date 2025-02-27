@@ -1,0 +1,174 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Редактирование пользователя - БанкКредит{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Редактирование пользователя {{ user.username }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Имя пользователя</label>
+                                <input type="text" name="username" class="form-control" 
+                                       value="{{ user.username }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Телефон</label>
+                                <input type="tel" name="phone" class="form-control" 
+                                       value="{{ user.phone }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Роль</label>
+                                <select name="role" class="form-select" required>
+                                    {% for role, display in user.ROLE_CHOICES %}
+                                        <option value="{{ role }}" 
+                                                {% if user.role == role %}selected{% endif %}>
+                                            {{ display }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Статус аккаунта</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="is_active" id="isActive" 
+                                           {% if user.is_active %}checked{% endif %}>
+                                    <label class="form-check-label" for="isActive">
+                                        Активен
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Новый пароль</label>
+                                <input type="password" name="new_password" class="form-control" 
+                                       placeholder="Оставьте пустым, чтобы не менять">
+                                <small class="form-text text-muted">
+                                    Заполните только если хотите изменить пароль
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h5>Дополнительная информация</h5>
+                        <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+                        <p><strong>Последний вход:</strong> 
+                            {% if user.last_login %}
+                                {{ user.last_login|date:"d.m.Y H:i" }}
+                            {% else %}
+                                Никогда не входил
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6>При сохранении формы возникли ошибки:</h6>
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            Сохранить изменения
+                        </button>
+                        <div class="btn-group">
+                            <a href="{% url 'admin_user_list' %}" class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="confirmDelete({{ user.id }})">
+                                Удалить пользователя
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if user.role == 'client' %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">История заявок</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.applications.exists %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>№</th>
+                                        <th>Сумма</th>
+                                        <th>Статус</th>
+                                        <th>Дата</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in user.applications.all %}
+                                        <tr>
+                                            <td>{{ app.id }}</td>
+                                            <td>{{ app.amount }} ₽</td>
+                                            <td>
+                                                <span class="badge {% if app.status == 'approved' %}bg-success
+                                                    {% elif app.status == 'rejected' %}bg-danger
+                                                    {% else %}bg-warning{% endif %}">
+                                                    {{ app.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ app.created_at|date:"d.m.Y" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">У пользователя нет заявок на кредит</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(userId) {
+    if (confirm('Вы действительно хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+        fetch(`/admin/user/${userId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = '{% url "admin_user_list" %}';
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,92 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-6">
+        <h1 class="display-4 mb-4">Банковская система кредитования</h1>
+        <p class="lead mb-4">Получите кредит на выгодных условиях для реализации ваших целей</p>
+        {% if not user.is_authenticated %}
+            <div class="d-grid gap-2 d-md-flex">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Начать сейчас</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Войти</a>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Калькулятор кредита</h5>
+                <form id="creditCalculator" class="mt-3">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Сумма кредита</label>
+                        <input type="number" class="form-control" id="amount" min="10000" step="1000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="term" class="form-label">Срок (месяцев)</label>
+                        <input type="number" class="form-control" id="term" min="3" max="60">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Рассчитать</button>
+                </form>
+                <div id="result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Потребительский кредит</h5>
+                <p class="card-text">От 10 000 рублей</p>
+                <p class="card-text">Срок от 3 месяцев</p>
+                <p class="card-text">Ставка от 9.9% годовых</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Быстрое решение</h5>
+                <p class="card-text">Рассмотрение заявки за 1 день</p>
+                <p class="card-text">Минимальный пакет документов</p>
+                <p class="card-text">Онлайн-заявка</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Удобное погашение</h5>
+                <p class="card-text">Через интернет-банк</p>
+                <p class="card-text">В отделениях банка</p>
+                <p class="card-text">Через банкоматы</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('creditCalculator').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const amount = parseFloat(document.getElementById('amount').value);
+    const term = parseInt(document.getElementById('term').value);
+    const annualRate = 9.9;
+    const monthlyRate = annualRate / 12 / 100;
+    
+    const monthlyPayment = amount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
+    const totalAmount = monthlyPayment * term;
+    const overpayment = totalAmount - amount;
+    
+    document.getElementById('result').innerHTML = `
+        <h6 class="mt-3">Расчет платежей:</h6>
+        <p>Ежемесячный платеж: ${monthlyPayment.toFixed(2)} ₽</p>
+        <p>Общая сумма: ${totalAmount.toFixed(2)} ₽</p>
+        <p>Переплата: ${overpayment.toFixed(2)} ₽</p>
+    `;
+});
+</script>
+{% endblock %}
