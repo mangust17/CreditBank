@@ -22,7 +22,11 @@ SECRET_KEY = 'django-insecure-dt^=(+5^+ku^r+n-mcq&+&4w$2(i^dva_2cjvk2z8edwwr2!3m
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'creditbank-production.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 
@@ -134,15 +138,18 @@ LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 
 
-CSRF_COOKIE_SECURE = False  # В продакшене установите True
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = True
 
 # Максимальный размер загружаемого файла (5MB)
 MAX_UPLOAD_SIZE = 5242880
 
-ALLOWED_HOSTS = [
-    "creditbank-production.up.railway.app",
-    "localhost",
-    "127.0.0.1"
+CSRF_TRUSTED_ORIGINS = [
+    'https://creditbank-production.up.railway.app',
 ]
+
+# Для безопасности соединений
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
