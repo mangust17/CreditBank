@@ -140,3 +140,9 @@ CSRF_USE_SESSIONS = True
 
 # Максимальный размер загружаемого файла (5MB)
 MAX_UPLOAD_SIZE = 5242880
+
+ALLOWED_HOSTS = [
+    "creditbank-production.up.railway.app",
+    "localhost",
+    "127.0.0.1"
+]
